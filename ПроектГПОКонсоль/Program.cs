@@ -19,7 +19,7 @@ namespace ПроектГПОКонсоль
             Max_iteration = 500; // Maximum numbef of iterations
             //Load details of the selected benchmark function
             Get_Functions_details(Function_name, out lb1, out ub1, out dim, out fobj);
-            DA(SearchAgents_no, Max_iteration, lb, ub, dim, fobj);
+            DA(SearchAgents_no, Max_iteration, out lb, out ub, dim, fobj, lb1, ub1);
         }
         static void Get_Functions_details(string F, out double lb1, out double ub1, out int dim, out TFunc fobj)
         {
@@ -248,7 +248,7 @@ namespace ПроектГПОКонсоль
             double y = 0.1 * (Math.Pow(Math.Sin(3 * Math.PI * x[0]), 2) + sum1 + Math.Pow(x[dim - 1] - 1, 2) * (1 + Math.Pow(Math.Sin(2 * Math.PI * x[dim - 1]), 2))) + sum2;
             return y;
         }
-        static void initialization(int SearchAgents_no, int dim, double[] lb, double[] ub, double[,] X)
+        static void initialization(int SearchAgents_no, int dim, double[] lb, double[] ub, ref double[,] X)
         {
             int i, j; Random rnd = new Random();
             for (i = 0; i < dim; ++i)
@@ -259,8 +259,23 @@ namespace ПроектГПОКонсоль
                 }
             }
         }
-        static void DA(int SearchAgents_no, int Max_iteration, double[] lb, double[] ub, int dim, TFunc fobj)
+        static void DA(int SearchAgents_no, int Max_iteration, out double[] lb, out double[] ub, int dim, TFunc fobj, double lb1, double ub1)
         {
+            int i; lb = new double [dim]; ub = new double [dim];
+            for (i = 0; i < dim; ++i)
+            {
+                lb[i] = lb1; ub[i] = ub1;
+            }
+            double[] r=new double [dim], Delta_max=new double [dim];
+            for (i = 0; i < dim; ++i)
+            {
+                r[i] = Delta_max[i] = (ub[i] - lb[i]) / 10.0;
+            }
+            double Food_fitness, Enemy_fitness;
+            double[] Food_pos = new double[dim], Enemy_pos = new double[dim];
+            Food_fitness = Double.PositiveInfinity; Enemy_fitness = Double.NegativeInfinity;
+            double[,] X = new double[dim, SearchAgents_no];
+            initialization(SearchAgents_no, dim, lb, ub, ref X);
 
         }
     }
