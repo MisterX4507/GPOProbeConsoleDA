@@ -248,14 +248,14 @@ namespace ПроектГПОКонсоль
             double y = 0.1 * (Math.Pow(Math.Sin(3 * Math.PI * x[0]), 2) + sum1 + Math.Pow(x[dim - 1] - 1, 2) * (1 + Math.Pow(Math.Sin(2 * Math.PI * x[dim - 1]), 2))) + sum2;
             return y;
         }
-        static void initialization(int SearchAgents_no, int dim, double[] lb, double[] ub, ref double[,] X)
+        static void initialization(int SearchAgents_no, int dim, double[] lb, double[] ub, ref double[][] X)
         {
             int i, j; Random rnd = new Random();
-            for (i = 0; i < dim; ++i)
+            for (i = 0; i < SearchAgents_no; ++i)
             {
-                for (j = 0; j < SearchAgents_no; ++j)
+                for (j = 0; j < dim; ++j)
                 {
-                    X[i, j] = rnd.NextDouble() * (ub[i] - lb[i]) + lb[i];
+                    X[i][j] = rnd.NextDouble() * (ub[i] - lb[i]) + lb[i];
                 }
             }
         }
@@ -269,13 +269,37 @@ namespace ПроектГПОКонсоль
             double[] r=new double [dim], Delta_max=new double [dim];
             for (i = 0; i < dim; ++i)
             {
-                r[i] = Delta_max[i] = (ub[i] - lb[i]) / 10.0;
+                Delta_max[i] = (ub[i] - lb[i]) / 10.0; // The initial radius of gragonflies' neighbourhoods
             }
             double Food_fitness, Enemy_fitness;
             double[] Food_pos = new double[dim], Enemy_pos = new double[dim];
             Food_fitness = Double.PositiveInfinity; Enemy_fitness = Double.NegativeInfinity;
-            double[,] X = new double[dim, SearchAgents_no];
-            initialization(SearchAgents_no, dim, lb, ub, ref X);
+            double[][] X = new double[SearchAgents_no][]; double[][] DeltaX = new double[SearchAgents_no][];
+            for (i = 0; i < SearchAgents_no; ++i)
+            {
+                X[i] = new double[dim];
+                DeltaX[i] = new double[dim];
+            }
+                initialization(SearchAgents_no, dim, lb, ub, ref X);
+            double[] Fitness = new double[SearchAgents_no];
+            initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);
+            int iter; double my_c = 0, w = 0;
+            for (iter = 1; iter <= Max_iteration; ++i)
+            {
+                for (i = 0; i < dim; ++i)
+                {
+                    r[i] = (ub[i] - lb[i]) / 4.0 + ((ub[i]-lb[i])*((double)iter/(double)Max_iteration)*2);
+                }
+                w = 0.9 - iter * (0.5 / (double)Max_iteration);
+                my_c = 0.1 - iter * (0.1 / ((double)Max_iteration / 2.0));
+                if (my_c < 0) my_c = 0;
+            }
+            double s, a, c, f, e; Random rnd = new Random();
+            s = 2 * rnd.NextDouble() * my_c; // Seperation weight
+            a = 2 * rnd.NextDouble() * my_c; // Alignment weight
+            c = 2 * rnd.NextDouble() * my_c; // Cohesion weight
+            f = 2 * rnd.NextDouble();        // Food attraction weight
+            e = my_c;                        // Enemy distraction weight
 
         }
     }
