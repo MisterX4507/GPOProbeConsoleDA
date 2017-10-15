@@ -261,7 +261,7 @@ namespace ПроектГПОКонсоль
         }
         static void DA(int SearchAgents_no, int Max_iteration, out double[] lb, out double[] ub, int dim, TFunc fobj, double lb1, double ub1)
         {
-            int i; lb = new double [dim]; ub = new double [dim];
+            int i, j; lb = new double [dim]; ub = new double [dim];
             for (i = 0; i < dim; ++i)
             {
                 lb[i] = lb1; ub[i] = ub1;
@@ -283,7 +283,7 @@ namespace ПроектГПОКонсоль
                 initialization(SearchAgents_no, dim, lb, ub, ref X);
             double[] Fitness = new double[SearchAgents_no];
             initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);
-            int iter; double my_c = 0, w = 0;
+            int iter; double my_c, w;
             for (iter = 1; iter <= Max_iteration; ++i)
             {
                 for (i = 0; i < dim; ++i)
@@ -293,14 +293,66 @@ namespace ПроектГПОКонсоль
                 w = 0.9 - iter * (0.5 / (double)Max_iteration);
                 my_c = 0.1 - iter * (0.1 / ((double)Max_iteration / 2.0));
                 if (my_c < 0) my_c = 0;
-            }
-            double s, a, c, f, e; Random rnd = new Random();
-            s = 2 * rnd.NextDouble() * my_c; // Seperation weight
-            a = 2 * rnd.NextDouble() * my_c; // Alignment weight
-            c = 2 * rnd.NextDouble() * my_c; // Cohesion weight
-            f = 2 * rnd.NextDouble();        // Food attraction weight
-            e = my_c;                        // Enemy distraction weight
+                double s, a, c, f, e; Random rnd = new Random();
+                s = 2 * rnd.NextDouble() * my_c; // Seperation weight
+                a = 2 * rnd.NextDouble() * my_c; // Alignment weight
+                c = 2 * rnd.NextDouble() * my_c; // Cohesion weight
+                f = 2 * rnd.NextDouble();        // Food attraction weight
+                e = my_c;                        // Enemy distraction weight
+                for (i = 0; i < SearchAgents_no; ++i) //Calculate all the objective values
+                {                    
+                    Fitness[i] = fobj(X[i]);
+                    if (Fitness[i] < Food_fitness)
+                    {
+                        Food_fitness = Fitness[i];
+                        Food_pos = X[i];
+                    }
+                    bool q=true;
+                    if (Fitness[i] > Enemy_fitness)
+                    {
+                        for (j = 0; j < dim; ++j)
+                        {
+                            if ((X[i][j] > ub[j]) || (X[i][j] < lb[j])) { q = false; break; }
+                        }
+                        if (q)
+                        {
+                            Enemy_fitness = Fitness[i];
+                            Enemy_pos = X[i];
+                        }
+                    }
+                }
+                for (i = 0; i < SearchAgents_no; ++i)
+                {
+                    double[] Dist2Enemy=new double [dim];
+                    double Dist2Food;
+                    int index = -1; int neighbours_no = 0;
+                    double[][] Neighbours_DeltaX = new double[SearchAgents_no][]; //clear?
+                    double[][] Neighbours_X = new double[SearchAgents_no][];
+                    //find the neighbouring solutions
+                    for (j = 0; j < SearchAgents_no; ++j)
+                    {
+                        distance(X[i], X[j], ref Dist2Enemy);
+                        bool q = true; for (int k = 0; k < Dist2Enemy.Length; ++k)
+                        {
+                            if ((Dist2Enemy[k] > r[k]) || (Dist2Enemy[k] == 0)) { q = false; break; }
+                        }
+                        if (q)
+                        {
+                            index = index + 1; neighbours_no = neighbours_no + 1;
+                            Neighbours_DeltaX[index] = DeltaX[j];
+                            Neighbours_X[index] = X[j];
+                        }
+                    }
 
+                }
+            }
+        }
+        static void distance(double[] A, double[] B, ref double[] Dist)
+        {
+            for (int i = 0; i < Dist.Length; ++i)
+            {
+                Dist[i] = Math.Sqrt(Math.Pow(A[i]-B[i],2));
+            }
         }
     }
 }
