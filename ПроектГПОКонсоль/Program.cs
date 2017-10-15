@@ -324,23 +324,134 @@ namespace ПроектГПОКонсоль
                 for (i = 0; i < SearchAgents_no; ++i)
                 {
                     double[] Dist2Enemy=new double [dim];
-                    double Dist2Food;
-                    int index = -1; int neighbours_no = 0;
+                    double[] Dist2Food = new double [dim];
+                    int index = 0; int neighbours_no = 0;
                     double[][] Neighbours_DeltaX = new double[SearchAgents_no][]; //clear?
                     double[][] Neighbours_X = new double[SearchAgents_no][];
                     //find the neighbouring solutions
                     for (j = 0; j < SearchAgents_no; ++j)
                     {
                         distance(X[i], X[j], ref Dist2Enemy);
-                        bool q = true; for (int k = 0; k < Dist2Enemy.Length; ++k)
+                        bool q = true; for (int k = 0; k < dim; ++k)
                         {
                             if ((Dist2Enemy[k] > r[k]) || (Dist2Enemy[k] == 0)) { q = false; break; }
                         }
                         if (q)
                         {
                             index = index + 1; neighbours_no = neighbours_no + 1;
-                            Neighbours_DeltaX[index] = DeltaX[j];
-                            Neighbours_X[index] = X[j];
+                            Neighbours_DeltaX[index - 1] = new double[dim];
+                            Neighbours_X[index - 1] = new double[dim];
+                            Neighbours_DeltaX[index-1] = DeltaX[j];
+                            Neighbours_X[index-1] = X[j];
+                        }
+                    }
+                    // Seperation Eq. (3.1)
+                    double[] S = new double[dim];
+                    if (neighbours_no > 1)
+                    {
+                        for (int k = 0; k < neighbours_no; ++k)
+                        {
+                            for (int ka = 0; ka < dim; ++ka)
+                            {
+                                S[ka] = S[ka] + (Neighbours_X[k][ka] - X[i][ka]);  // mistakable?
+                            }
+                        }
+                        for (int k = 0; k < S.Length; ++k)
+                        {
+                            S[k] = -1 * S[k];
+                        }
+                    }
+                    else
+                    {
+                        Array.Clear(S, 0, dim);
+                    }
+                    // Alignment Eq. (3.2)
+                    double[] A = new double[dim];
+                    if (neighbours_no > 1)
+                    {
+                        for (int k1 = 0; k1 < dim; ++k1)
+                        {
+                            for (int k2 = 0; k2 < index; ++k2)
+                            {
+                                A[k1] = A[k1] + Neighbours_DeltaX[k2][k1];
+                            }
+                            A[k1] = A[k1] / (double)neighbours_no;
+                        }
+                    }
+                    else
+                    {
+                        A = DeltaX[i];
+                    }
+                    // Cohesion Eq. (3.3)
+                    double[] C_temp = new double[dim];
+                    if (neighbours_no > 1)
+                    {
+                        for (int k1 = 0; k1 < dim; ++k1)
+                        {
+                            for (int k2 = 0; k2 < index; ++k2)
+                            {
+                                C_temp[k1] = C_temp[k1] + Neighbours_X[k2][k1];
+                            }
+                            C_temp[k1] = C_temp[k1] / (double)neighbours_no;
+                        }
+                    }
+                    else
+                    {
+                        C_temp = X[i];
+                    }
+                    double[] C = new double[dim];
+                    for (int k = 0; k < dim; ++k)
+                    {
+                        C[k] = C_temp[k] - X[i][k];
+                    }
+                    // Attraction to food Eq. (3.4)
+                    distance(X[i], Food_pos, ref Dist2Food);
+                    double[] F = new double[dim];
+                    bool q1 = true; for (int k = 0; k < dim; ++k)
+                    {
+                        if (Dist2Food[k] > r[k]) { q1 = false; break; }
+                    }
+                    if (q1)
+                    {
+                        for (int k = 0; k < dim; ++k)
+                        {
+                            F[k] = Food_pos[k] - X[i][k];
+                        }
+                    }
+                    else
+                    {
+                        Array.Clear(F, 0, dim);
+                    }
+                    // Distraction from enemy Eq. (3.5)
+                    distance(X[i], Enemy_pos, ref Dist2Enemy);
+                    double[] Enemy = new double[dim];
+                    q1 = true; for (int k = 0; k < dim; ++k)
+                    {
+                        if (Dist2Enemy[k] > r[k]) { q1 = false; break; }
+                    }
+                    if (q1)
+                    {
+                        for (int k = 0; k < dim; ++k)
+                        {
+                            Enemy[k] = Enemy_pos[k] + X[i][k];
+                        }
+                    }
+                    else
+                    {
+                        Array.Clear(Enemy, 0, dim);
+                    }
+                    Random rand = new Random();
+                    for (int tt = 0; tt < dim; ++tt)
+                    {
+                        if (X[i][tt] > ub[tt])
+                        {
+                            X[i][tt] = lb[tt];
+                            DeltaX[i][tt] = rand.NextDouble();
+                        }
+                        if (X[i][tt] < lb[tt])
+                        {
+                            X[i][tt] = ub[tt];
+                            DeltaX[i][tt] = rand.NextDouble();
                         }
                     }
 
