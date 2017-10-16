@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.DataVisualization.Charting;
 
 namespace ПроектГПОКонсоль
 {
@@ -464,6 +465,26 @@ namespace ПроектГПОКонсоль
             {
                 Dist[i] = Math.Sqrt(Math.Pow(A[i]-B[i],2));
             }
+        }
+        static double[] Levy(int d)
+        {
+            double beta = 1.5; double sigma;
+            Chart Chart1 = new Chart();
+            // Eq. (3.10)
+            sigma = Math.Pow((Chart1.DataManipulator.Statistics.GammaFunction(1 + beta) * Math.Sin(Math.PI * beta / 2.0) / (Chart1.DataManipulator.Statistics.GammaFunction((1 + beta) / 2.0) * beta * Math.Pow(2, ((beta - 1) / 2.0)))), (1.0 / beta));
+            double[] step = new double[d];
+            for (int i = 0; i < d; ++i)
+            {
+                step[i] = ((randn() * sigma) / Math.Pow(Math.Abs(randn()),(1.0/beta)))*0.01;
+            }
+            return step;
+        }
+        static double randn()
+        {
+            double n,r; Random rand = new Random();
+            r = rand.NextDouble();
+            n = Math.Sqrt(-2 * Math.Log(r)) * Math.Cos(2 * Math.PI * r);
+            return n;
         }
     }
 }
