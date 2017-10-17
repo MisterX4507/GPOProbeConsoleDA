@@ -256,7 +256,7 @@ namespace ПроектГПОКонсоль
             {
                 for (j = 0; j < dim; ++j)
                 {
-                    X[i][j] = rnd.NextDouble() * (ub[i] - lb[i]) + lb[i];
+                    X[i][j] = rnd.NextDouble() * (ub[j] - lb[j]) + lb[j];
                 }
             }
         }
@@ -270,6 +270,7 @@ namespace ПроектГПОКонсоль
             double[] r=new double [dim], Delta_max=new double [dim];
             for (i = 0; i < dim; ++i)
             {
+                r[i] = (ub[i] - lb[i]) / 10.0;
                 Delta_max[i] = (ub[i] - lb[i]) / 10.0; // The initial radius of gragonflies' neighbourhoods
             }
             double Food_fitness, Enemy_fitness;
@@ -426,11 +427,11 @@ namespace ПроектГПОКонсоль
                     // Distraction from enemy Eq. (3.5)
                     distance(X[i], Enemy_pos, ref Dist2Enemy);
                     double[] Enemy = new double[dim];
-                    q1 = true; for (int k = 0; k < dim; ++k)
+                    bool q2 = true; for (int k = 0; k < dim; ++k)
                     {
-                        if (Dist2Enemy[k] > r[k]) { q1 = false; break; }
+                        if (Dist2Enemy[k] > r[k]) { q2 = false; break; }
                     }
-                    if (q1)
+                    if (q2)
                     {
                         for (int k = 0; k < dim; ++k)
                         {
@@ -455,7 +456,53 @@ namespace ПроектГПОКонсоль
                             DeltaX[i][tt] = rand.NextDouble();
                         }
                     }
-
+                    if (q1 == false)
+                    {
+                        if (neighbours_no > 1)
+                        {
+                            for (j = 0; j < dim; ++j)
+                            {
+                                DeltaX[i][j] = w * DeltaX[i][j] + rand.NextDouble() * S[j] + rand.NextDouble() * A[j] + rand.NextDouble() * C[j];
+                                if (DeltaX[i][j] > Delta_max[j])
+                                {
+                                    DeltaX[i][j] = Delta_max[j];
+                                }
+                                if (DeltaX[i][j] < -Delta_max[j])
+                                {
+                                    DeltaX[i][j] = -Delta_max[j];
+                                }
+                                X[i][j] = X[i][j] + DeltaX[i][j];
+                            }
+                        }
+                        else
+                        {
+                            // Eq. (3.8)
+                            double[] Ly = new double[dim]; Ly = Levy(dim);
+                            for (j = 0; j < dim; ++j)
+                            {
+                                X[i][j] = X[i][j] + Ly[j] * X[i][j];
+                                DeltaX[i][j] = 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (j = 0; j < dim; ++j)
+                        {
+                            // Eq. (3.6)
+                            DeltaX[i][j] = (s * S[j] + a * A[j] + c * C[j] + f * F[j] + e * Enemy[j]) + w * DeltaX[i][j];
+                            if (DeltaX[i][j] > Delta_max[j])
+                            {
+                                DeltaX[i][j] = Delta_max[j];
+                            }
+                            if (DeltaX[i][j] < -Delta_max[j])
+                            {
+                                DeltaX[i][j] = -Delta_max[j];
+                            }
+                            X[i][j] = X[i][j] + DeltaX[i][j];
+                        }
+                    }
+                    
                 }
             }
         }
@@ -475,7 +522,7 @@ namespace ПроектГПОКонсоль
             double[] step = new double[d];
             for (int i = 0; i < d; ++i)
             {
-                step[i] = ((randn() * sigma) / Math.Pow(Math.Abs(randn()),(1.0/beta)))*0.01;
+                step[i] = ((randn() * sigma) / Math.Pow(Math.Abs(randn()), (1.0 / beta))) * 0.01;
             }
             return step;
         }
