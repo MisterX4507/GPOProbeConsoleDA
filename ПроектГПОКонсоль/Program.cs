@@ -16,9 +16,9 @@ namespace ПроектГПОКонсоль
             int SearchAgents_no, Max_iteration, dim; string Function_name;
             double[] lb; double[] ub; TFunc fobj; double lb1, ub1; double Best_score = 100;
             double[] Best_pos;
-            SearchAgents_no = 1; // Number of search agents
+            SearchAgents_no = 2; // Number of search agents
             Function_name = "F1"; // Name of the test function that can be from F1 to F13 (Table 1,2,3 in the paper)
-            Max_iteration = 8; // Maximum number of iterations
+            Max_iteration = 6; // Maximum number of iterations
             //Load details of the selected benchmark function
             Get_Functions_details(Function_name, out lb1, out ub1, out dim, out fobj);
             DA(SearchAgents_no, Max_iteration, out lb, out ub, dim, fobj, lb1, ub1, out Best_pos, ref Best_score);
@@ -289,44 +289,37 @@ namespace ПроектГПОКонсоль
                 X[i] = new double[dim];
                 DeltaX[i] = new double[dim];
             }
-            initialization(SearchAgents_no, dim, lb, ub, ref X);
-            Console.WriteLine("X:");
-            for (i=0; i<dim; ++i)
-            {
-                Console.WriteLine("X[0][{0}]={1}", i, X[0][i]); // Вывод координат первой стрекозы
-            }            
+            initialization(SearchAgents_no, dim, lb, ub, ref X);               
             double[] Fitness = new double[SearchAgents_no];
-            initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);
-            Console.WriteLine("DeltaX:");
-            for (i = 0; i < dim; ++i)
-            {
-                Console.WriteLine("DeltaX[0][{0}]={1}", i, DeltaX[0][i]); // Вывод скоростей первой стрекозы
-            } 
+            initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);         
             int iter; double my_c, w;
             for (iter = 1; iter <= Max_iteration; ++iter)
             {
                 for (i = 0; i < dim; ++i)
                 {
-                    r[i] = (ub[i] - lb[i]) / 4.0 + ((ub[i]-lb[i])*((double)iter/(double)Max_iteration)*2);
+                    r[i] = (ub[i] - lb[i]) / 4.0 + ((ub[i] - lb[i]) * ((double)iter / (double)Max_iteration) * 2);
                 }
                 w = 0.9 - iter * (0.5 / (double)Max_iteration);
                 my_c = 0.1 - iter * (0.1 / ((double)Max_iteration / 2.0));
                 if (my_c < 0) my_c = 0;
-                double s, a, c, f, e; Random rnd = new Random();
-                s = 2 * rnd.NextDouble() * my_c; // Seperation weight
-                a = 2 * rnd.NextDouble() * my_c; // Alignment weight
-                c = 2 * rnd.NextDouble() * my_c; // Cohesion weight
-                f = 2 * rnd.NextDouble();        // Food attraction weight
-                e = my_c;                        // Enemy distraction weight
+                double s, a, c, f, e;
+                Random rnd1 = new Random();
+                s = 2 * rnd1.NextDouble() * my_c; // Seperation weight                
+                a = 2 * rnd1.NextDouble() * my_c; // Alignment weight                
+                c = 2 * rnd1.NextDouble() * my_c; // Cohesion weight                           
+                f = 2 * rnd1.NextDouble();        // Food attraction weight
+                e = my_c;                         // Enemy distraction weight
                 for (i = 0; i < SearchAgents_no; ++i) //Calculate all the objective values
-                {                    
+                {
                     Fitness[i] = fobj(X[i]);
                     if (Fitness[i] < Food_fitness)
                     {
                         Food_fitness = Fitness[i];
-                        Food_pos = X[i];
+                        for (j = 0; j < dim; ++j)
+                        {
+                            Food_pos[j] = X[i][j];
+                        }                            
                     }
-                    
                     bool q = true;
                     if (Fitness[i] > Enemy_fitness)
                     {
@@ -461,10 +454,10 @@ namespace ПроектГПОКонсоль
                     else
                     {
                         Array.Clear(Enemy, 0, dim);
-                    }
-                    Random rand = new Random();
+                    }                    
                     for (int tt = 0; tt < dim; ++tt)
                     {
+                        Random rand = new Random();
                         if (X[i][tt] > ub[tt])
                         {
                             X[i][tt] = lb[tt];
@@ -476,12 +469,22 @@ namespace ПроектГПОКонсоль
                             DeltaX[i][tt] = rand.NextDouble();
                         }
                     }
+                    for (j = 0; j < dim; ++j)
+                    {
+                        Console.WriteLine("X[{0}][{1}]={2}", i, j, X[i][j]);
+                    }
+                    for (j = 0; j < dim; ++j)
+                    {
+                        Console.WriteLine("DeltaX[{0}][{1}]={2}", i, j, DeltaX[i][j]);
+                    }
+                    Console.WriteLine(q1);
                     if (q1 == false)
                     {
                         if (neighbours_no > 1)
-                        {
+                        {                            
                             for (j = 0; j < dim; ++j)
                             {
+                                Random rand = new Random();
                                 DeltaX[i][j] = w * DeltaX[i][j] + rand.NextDouble() * S[j] + rand.NextDouble() * A[j] + rand.NextDouble() * C[j];
                                 if (DeltaX[i][j] > Delta_max[j])
                                 {
@@ -523,19 +526,24 @@ namespace ПроектГПОКонсоль
                         }
                     }
                     for (j = 0; j < dim; ++j)
-                    {
-                        if (X[i][j] > ub[j])
                         {
-                            X[i][j] = ub[j];
+                            if (X[i][j] > ub[j])
+                            {
+                                X[i][j] = ub[j];
+                            }
+                            if (X[i][j] < lb[j])
+                            {
+                                X[i][j] = lb[j];
+                            }
                         }
-                        if (X[i][j] < lb[j])
-                        {
-                            X[i][j] = lb[j];
-                        }
-                    }
                 }
                 Best_s = Food_fitness;
+                Console.WriteLine(Food_fitness);
                 Best_p = Food_pos;
+                for (j = 0; j < dim; j++)
+                {
+                    Console.WriteLine("Итого: Food_pos[{0}]={1}", j, Food_pos[j]);
+                }
             }
         }
         static void distance(double[] A, double[] B, ref double[] Dist)
@@ -554,7 +562,9 @@ namespace ПроектГПОКонсоль
             double[] step = new double[d];
             for (int i = 0; i < d; ++i)
             {
-                step[i] = ((randn() * sigma) / Math.Pow(Math.Abs(randn()), (1.0 / beta))) * 0.01;
+                double r1 = randn();
+                double r2 = randn();
+                step[i] = ((r1 * sigma) / Math.Pow(Math.Abs(r2), (1.0 / beta))) * 0.01;
             }
             return step;
         }
