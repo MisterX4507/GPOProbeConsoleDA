@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.UI.DataVisualization.Charting;
 
@@ -16,9 +17,9 @@ namespace ПроектГПОКонсоль
             int SearchAgents_no, Max_iteration, dim; string Function_name;
             double[] lb; double[] ub; TFunc fobj; double lb1, ub1; double Best_score = 100;
             double[] Best_pos;
-            SearchAgents_no = 2; // Number of search agents
+            SearchAgents_no = 30; // Number of search agents
             Function_name = "F1"; // Name of the test function that can be from F1 to F13 (Table 1,2,3 in the paper)
-            Max_iteration = 6; // Maximum number of iterations
+            Max_iteration = 300; // Maximum number of iterations
             //Load details of the selected benchmark function
             Get_Functions_details(Function_name, out lb1, out ub1, out dim, out fobj);
             DA(SearchAgents_no, Max_iteration, out lb, out ub, dim, fobj, lb1, ub1, out Best_pos, ref Best_score);
@@ -258,7 +259,8 @@ namespace ПроектГПОКонсоль
         }
         static void initialization(int SearchAgents_no, int dim, double[] lb, double[] ub, ref double[][] dX)
         {
-            int i, j; Random rnd = new Random();
+            int i, j;
+            Random rnd = new Random();
             for (i = 0; i < SearchAgents_no; ++i)
             {
                 for (j = 0; j < dim; ++j)
@@ -289,9 +291,9 @@ namespace ПроектГПОКонсоль
                 X[i] = new double[dim];
                 DeltaX[i] = new double[dim];
             }
-            initialization(SearchAgents_no, dim, lb, ub, ref X);               
+            initialization(SearchAgents_no, dim, lb, ub, ref X); 
             double[] Fitness = new double[SearchAgents_no];
-            initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);         
+            initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);
             int iter; double my_c, w;
             for (iter = 1; iter <= Max_iteration; ++iter)
             {
@@ -306,7 +308,7 @@ namespace ПроектГПОКонсоль
                 Random rnd1 = new Random();
                 s = 2 * rnd1.NextDouble() * my_c; // Seperation weight                
                 a = 2 * rnd1.NextDouble() * my_c; // Alignment weight                
-                c = 2 * rnd1.NextDouble() * my_c; // Cohesion weight                           
+                c = 2 * rnd1.NextDouble() * my_c; // Cohesion weight         
                 f = 2 * rnd1.NextDouble();        // Food attraction weight
                 e = my_c;                         // Enemy distraction weight
                 for (i = 0; i < SearchAgents_no; ++i) //Calculate all the objective values
@@ -330,7 +332,10 @@ namespace ПроектГПОКонсоль
                         if (q == true)
                         {
                             Enemy_fitness = Fitness[i];
-                            Enemy_pos = X[i];
+                            for (j = 0; j < dim; ++j)
+                            {
+                                Enemy_pos[j] = X[i][j];
+                            }                            
                         }
                     }
                 }
@@ -356,8 +361,11 @@ namespace ПроектГПОКонсоль
                             index = index + 1; neighbours_no = neighbours_no + 1;
                             Neighbours_DeltaX[index - 1] = new double[dim];
                             Neighbours_X[index - 1] = new double[dim];
-                            Neighbours_DeltaX[index-1] = DeltaX[j];
-                            Neighbours_X[index-1] = X[j];
+                            for (int k = 0; k < dim; ++k)
+                            {
+                                Neighbours_DeltaX[index - 1][k] = DeltaX[j][k];  //??????????????????????????
+                                Neighbours_X[index-1][k] = X[j][k];
+                            }                           
                         }
                     }
                     // Seperation Eq. (3.1)
@@ -467,24 +475,16 @@ namespace ПроектГПОКонсоль
                         {
                             X[i][tt] = ub[tt];
                             DeltaX[i][tt] = rand.NextDouble();
-                        }
+                        }                       
                     }
-                    for (j = 0; j < dim; ++j)
-                    {
-                        Console.WriteLine("X[{0}][{1}]={2}", i, j, X[i][j]);
-                    }
-                    for (j = 0; j < dim; ++j)
-                    {
-                        Console.WriteLine("DeltaX[{0}][{1}]={2}", i, j, DeltaX[i][j]);
-                    }
-                    Console.WriteLine(q1);
                     if (q1 == false)
                     {
                         if (neighbours_no > 1)
                         {                            
+                            Random rand = new Random();
+                            Thread.Sleep(1);
                             for (j = 0; j < dim; ++j)
-                            {
-                                Random rand = new Random();
+                            {                                
                                 DeltaX[i][j] = w * DeltaX[i][j] + rand.NextDouble() * S[j] + rand.NextDouble() * A[j] + rand.NextDouble() * C[j];
                                 if (DeltaX[i][j] > Delta_max[j])
                                 {
@@ -538,12 +538,7 @@ namespace ПроектГПОКонсоль
                         }
                 }
                 Best_s = Food_fitness;
-                Console.WriteLine(Food_fitness);
-                Best_p = Food_pos;
-                for (j = 0; j < dim; j++)
-                {
-                    Console.WriteLine("Итого: Food_pos[{0}]={1}", j, Food_pos[j]);
-                }
+                Best_p = Food_pos;                
             }
         }
         static void distance(double[] A, double[] B, ref double[] Dist)
@@ -555,24 +550,32 @@ namespace ПроектГПОКонсоль
         }
         static double[] Levy(int d)
         {
-            double beta = 1.5; double sigma;
+            double beta = 1.5; double sigma, r1, r2;
+            Random rnd2 = new Random();
+            Thread.Sleep(1);
+            r1 = rnd2.NextDouble();
+            r2 = rnd2.NextDouble();
             Chart Chart1 = new Chart();
             // Eq. (3.10)
             sigma = Math.Pow((Chart1.DataManipulator.Statistics.GammaFunction(1 + beta) * Math.Sin(Math.PI * beta / 2.0) / (Chart1.DataManipulator.Statistics.GammaFunction((1 + beta) / 2.0) * beta * Math.Pow(2, ((beta - 1) / 2.0)))), (1.0 / beta));
             double[] step = new double[d];
             for (int i = 0; i < d; ++i)
             {
-                double r1 = randn();
-                double r2 = randn();
-                step[i] = ((r1 * sigma) / Math.Pow(Math.Abs(r2), (1.0 / beta))) * 0.01;
+                step[i] = ((randn(r1, i) * sigma) / Math.Pow(Math.Abs(randn(r2,i)), (1.0 / beta))) * 0.01;
             }
             return step;
         }
-        static double randn()
+        static double randn(double r, int i)
         {
-            double n,r; Random rand = new Random();
-            r = rand.NextDouble();
-            n = Math.Sqrt(-1 * 2 * Math.Log(r)) * Math.Cos(2 * Math.PI * r);
+            double n;
+            if (i % 2 == 0)
+            {
+                n = Math.Sqrt(-1 * 2 * Math.Log(r)) * Math.Cos(2 * Math.PI * r);
+            }
+            else
+            {
+                n = Math.Sqrt(-1 * 2 * Math.Log(r)) * Math.Sin(2 * Math.PI * r);
+            }
             return n;
         }
     }
