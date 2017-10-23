@@ -294,15 +294,19 @@ namespace ПроектГПОКонсоль
             initialization(SearchAgents_no, dim, lb, ub, ref X); 
             double[] Fitness = new double[SearchAgents_no];
             initialization(SearchAgents_no, dim, lb, ub, ref DeltaX);
-            int iter; double my_c, w;
+            int iter; double my_c, w, w1, w2 = 0.9, v1, v2 = 0.1;
+            w1 = 0.5 / Max_iteration;
+            v1 = 0.1 / Max_iteration;
             for (iter = 1; iter <= Max_iteration; ++iter)
             {
                 for (i = 0; i < dim; ++i)
                 {
                     r[i] = (ub[i] - lb[i]) / 4.0 + ((ub[i] - lb[i]) * ((double)iter / (double)Max_iteration) * 2);
                 }
-                w = 0.9 - iter * (0.5 / (double)Max_iteration);
-                my_c = 0.1 - iter * (0.1 / ((double)Max_iteration / 2.0));
+                w = 0.9 - iter * (w2 / (double)Max_iteration);
+                w2 = w2 - w1;
+                my_c = 0.1 - iter * (v2 / ((double)Max_iteration / 2.0));
+                v2 = v2 - v1;
                 if (my_c < 0) my_c = 0;
                 double s, a, c, f, e;
                 Random rnd1 = new Random();
