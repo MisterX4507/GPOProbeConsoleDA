@@ -21,9 +21,9 @@ namespace ПроектГПОКонсоль
             double[] lb; double[] ub; TFunc fobj; double lb1, ub1; double Best_score = 100;
             double[] Best_pos;
             SearchAgents_no = 30; // Number of search agents
-            Function_name = "F1"; // Name of the test function that can be from F1 to F13 (Table 1,2,3 in the paper)
+            Function_name = "F5"; // Name of the test function that can be from F1 to F13 (Table 1,2,3 in the paper)
             Max_iteration = 500; // Maximum number of iterations
-            int Max_progon = 1; Aver = new double[Max_iteration];
+            int Max_progon = 30; Aver = new double[Max_iteration];
             //Load details of the selected benchmark function
             Get_Functions_details(Function_name, out lb1, out ub1, out dim, out fobj);
             for (int k = 0; k < Max_progon; k++)
@@ -203,6 +203,7 @@ namespace ПроектГПОКонсоль
             {
                 sum = sum + (-1 * elem * Math.Sin(Math.Sqrt(Math.Abs(elem))));
             }
+            sum = sum / (double)x.Length;
             return sum;
         }
         static double F9(double[] x)
@@ -314,11 +315,10 @@ namespace ПроектГПОКонсоль
             {
                 for (i = 0; i < dim; i++)
                 {
-                    r[i] = (ub[i] - lb[i]) / 4.0 + ((ub[i] - lb[i]) * ((double)iter / (double)Max_iteration) * 2);
+                    r[i] = (ub[i] - lb[i]) / 2.0 + ((ub[i] - lb[i]) * ((double)iter / (double)Max_iteration) * 2);
                 }
-                w = 0.9 - iter * (0.5 / (double)Max_iteration);
+                w = 0.9 - iter * (0.15 / (double)Max_iteration);
                 my_c = 0.1 - iter * (0.1 / ((double)Max_iteration / 2.0));
-                //Console.WriteLine("w={0}   my_c={1}", w, my_c); Console.Read();
                 if (my_c < 0) my_c = 0;
                 double s, a, c, f, e;
                 s = 2 * rnd11.NextDouble() * my_c; // Seperation weight                
@@ -329,15 +329,12 @@ namespace ПроектГПОКонсоль
                 for (i = 0; i < SearchAgents_no; i++) //Calculate all the objective values
                 {
                     Fitness[i] = fobj(X[i]);
-                    //Console.Write("Fitness[{0}][{1}]={2}", iter, i, Fitness[i]); Console.ReadLine();
                     if (Fitness[i] < Food_fitness)
                     {
                         Food_fitness = Fitness[i];
-                        //Console.WriteLine("{0}: {1}", iter, Food_fitness); Console.Read();
                         for (j = 0; j < dim; j++)
                         {
-                            Food_pos[j] = X[i][j];
-                            //Console.WriteLine("Food_pos[{0}]={1}", j, Food_pos[j]); 
+                            Food_pos[j] = X[i][j]; 
                         }
                     }
                     bool q = true;
@@ -368,7 +365,6 @@ namespace ПроектГПОКонсоль
                     for (j = 0; j < SearchAgents_no; j++)
                     {
                         distance(X[i], X[j], ref Dist2Enemy);
-                        //Console.WriteLine("{0} и {1}: {2}", i, j, Dist2Enemy);
                         bool p = true; for (int k = 0; k < dim; k++)
                         {
                             if ((Dist2Enemy > r[k]) || (Dist2Enemy == 0))
@@ -378,41 +374,17 @@ namespace ПроектГПОКонсоль
                         }
                         if (p == true)
                         {
-                            //if ((i == 29) && (j == 27))
-                            //{
-                            //    for (int k = 0; k < dim; k++)
-                            //    {
-                            //        Console.Write("{0} ", X[i][k]);
-                            //    }
-                            //    Console.WriteLine();
-                            //    for (int k = 0; k < dim; k++)
-                            //    {
-                            //       Console.Write("{0} ", X[j][k]);
-                            //   }
-                            //    Console.WriteLine();
-                            //}
-                            //Console.WriteLine("Растояние между {0} и {1} = {2}, радиус = {3}", i, j, Dist2Enemy, r[0]);
                             index = index + 1; neighbours_no = neighbours_no + 1;
                             Neighbours_DeltaX[index - 1] = new double[dim];
                             Neighbours_X[index - 1] = new double[dim];
                             for (int k = 0; k < dim; k++)
                             {
-                                //Console.WriteLine("{4} стрекоза: DeltaX[{0}][{1}]={2} и X[{0}][{1}]={3}", j, k, DeltaX[j][k], X[j][k], i);
-                                Neighbours_DeltaX[index - 1][k] = DeltaX[j][k];  //??????????????????????????
+                                Neighbours_DeltaX[index - 1][k] = DeltaX[j][k];
                                 Neighbours_X[index - 1][k] = X[j][k];
-                                //Console.WriteLine("Neighbours_DeltaX[{0}][{1}]={2}; Neighbours_X[{0}][{1}]={3}", index - 1, k, Neighbours_DeltaX[index - 1][k], Neighbours_X[index - 1][k]);
                             }
                         }
-                    }
-                    //Console.WriteLine("{0}: Число соседей = {1}", i, neighbours_no);
-                    //for (int yyy = 0; yyy < neighbours_no; yyy++)
-                    //{
-                    //    for (int k = 0; k < dim; k++)
-                    //    {
-                    //        Console.WriteLine("Neighbours_DeltaX[{0}][{1}]={2}; Neighbours_X[{0}][{1}]={3}", yyy, k, Neighbours_DeltaX[yyy][k], Neighbours_X[yyy][k]);
-                    //    }
-                    //}                        
-                    // Seperation Eq. (3.1)
+                    }    
+                    // Seperation Eq. (2.1)
                     double[] S = new double[dim];
                     if (neighbours_no >= 1)
                     {
@@ -432,12 +404,7 @@ namespace ПроектГПОКонсоль
                     {
                         Array.Clear(S, 0, dim);
                     }
-                    //for (int k = 0; k < dim; k++)
-                    //{
-                    //    Console.Write("S[{0}][{1}]={2} ", i, k, S[k]);
-                    //}
-                    //Console.ReadLine();
-                    // Alignment Eq. (3.2)
+                    // Alignment Eq. (2.2)
                     double[] A = new double[dim];
                     if (neighbours_no > 1)
                     {
@@ -457,7 +424,7 @@ namespace ПроектГПОКонсоль
                             A[k1] = DeltaX[i][k1];
                         }
                     }
-                    // Cohesion Eq. (3.3)
+                    // Cohesion Eq. (2.3)
                     double[] C_temp = new double[dim];
                     if (neighbours_no >= 1)
                     {
@@ -482,14 +449,8 @@ namespace ПроектГПОКонсоль
                     {
                         C[k] = C_temp[k] - X[i][k];
                     }
-                    for (int k = 0; k < dim; k++)
-                    {
-                        Console.Write("C[{0}][{1}]={2} ", i, k, C[k]);
-                    }
-                    Console.WriteLine();
-                    // Attraction to food Eq. (3.4)
+                    // Attraction to food Eq. (2.4)
                     distance(X[i], Food_pos, ref Dist2Food);
-                    //Console.WriteLine("Еда {0}: {1}", i, Dist2Food);
                     double[] F = new double[dim];
                     bool q1 = true; for (int k = 0; k < dim; k++)
                     {
@@ -508,7 +469,6 @@ namespace ПроектГПОКонсоль
                     }
                     // Distraction from enemy Eq. (3.5)
                     distance(X[i], Enemy_pos, ref Dist2Enemy);
-                    //Console.WriteLine("Враг {0}: {1}", i, Dist2Enemy);
                     double[] Enemy = new double[dim];
                     bool q2 = true; for (int k = 0; k < dim; k++)
                     {
@@ -525,35 +485,6 @@ namespace ПроектГПОКонсоль
                     {
                         Array.Clear(Enemy, 0, dim);
                     }
-                    //if (i == 2)
-                    //{
-                    //Console.WriteLine("{0}, {1}:", iter, i);
-                    //for (int tt = 0; tt<dim; tt++)
-                    //{
-                    //Console.Write("S[{0}]={1} ", tt, S[tt]);
-                    //}
-                    //Console.WriteLine();
-                    //for (int tt = 0; tt < dim; tt++)
-                    //{
-                    //    Console.Write("A[{0}]={1} ", tt, A[tt]);
-                    //}
-                    //Console.WriteLine();
-                    //for (int tt = 0; tt < dim; tt++)
-                    //{
-                    //    Console.Write("C[{0}]={1} ", tt, C[tt]);
-                    //}
-                    //Console.WriteLine();
-                    //for (int tt = 0; tt < dim; tt++)
-                    //{
-                    //    Console.Write("F[{0}]={1} ", tt, F[tt]);
-                    //}
-                    //Console.WriteLine();
-                    //for (int tt = 0; tt < dim; tt++)
-                    //{
-                    //    Console.Write("Enemy[{0}]={1} ", tt, Enemy[tt]);
-                    //}
-                    //Console.WriteLine();
-                    //}
                     for (int tt = 0; tt < dim; ++tt)
                     {
                         if (X[i][tt] > ub[tt])
@@ -595,7 +526,7 @@ namespace ПроектГПОКонсоль
                         }
                         else
                         {
-                            // Eq. (3.8)
+                            // Eq. (2.8)
                             double[] Ly = new double[dim]; Ly = Levy(dim);
                             for (j = 0; j < dim; j++)
                             {
@@ -608,7 +539,7 @@ namespace ПроектГПОКонсоль
                     {
                         for (j = 0; j < dim; j++)
                         {
-                            // Eq. (3.6)
+                            // Eq. (2.6)
                             DeltaX[i][j] = (s * S[j] + a * A[j] + c * C[j] + f * F[j] + e * Enemy[j]) + w * DeltaX[i][j];
                             if (DeltaX[i][j] > Delta_max[j])
                             {
@@ -621,7 +552,6 @@ namespace ПроектГПОКонсоль
                             X[i][j] = X[i][j] + DeltaX[i][j];
                         }
                     }
-                    //if (i == 1) { Console.WriteLine(iter); }
                     for (j = 0; j < dim; j++)
                     {
                         if (X[i][j] > ub[j])
@@ -632,11 +562,7 @@ namespace ПроектГПОКонсоль
                         {
                             X[i][j] = lb[j];
                         }
-                        //if (i == 1)
-                        //{ Console.Write("{0} ", DeltaX[i][j]); }
                     }
-                    //if (i == 1)
-                    // Console.ReadLine();
                 }
                 Best_s = Food_fitness;
                 Aver[iter - 1] = Aver[iter - 1] + Food_fitness;
@@ -654,25 +580,29 @@ namespace ПроектГПОКонсоль
         }
         static double[] Levy(int d)
         {
-            double beta = 1.5; double sigma, r1, r2, r3, r4;
+            double beta = 1.5; double sigma, r1, r2;
             Chart Chart1 = new Chart();
-            // Eq. (3.10)
+            // Eq. (2.10)
             sigma = Math.Pow((Chart1.DataManipulator.Statistics.GammaFunction(1 + beta) * Math.Sin(Math.PI * beta / 2.0) / (Chart1.DataManipulator.Statistics.GammaFunction((1 + beta) / 2.0) * beta * Math.Pow(2, ((beta - 1) / 2.0)))), (1.0 / beta));
             double[] step = new double[d];
             for (int i = 0; i < d; i++)
             {
                 r1 = rnd11.NextDouble();
                 r2 = rnd11.NextDouble();
-                r3 = rnd11.NextDouble();
-                r4 = rnd11.NextDouble();
-                step[i] = ((randn(r1, r3) * sigma) / Math.Pow(Math.Abs(randn(r2, r4)), (1.0 / beta))) * 0.01;
+                step[i] = ((randn1(r1, r2) * sigma) / Math.Pow(Math.Abs(randn2(r1, r2)), (1.0 / beta))) * 0.01;
             }
             return step;
         }
-        static double randn(double r, double p)
+        static double randn1(double r, double p)
         {
             double n;
             n = Math.Sqrt(-1 * 2 * Math.Log(r)) * Math.Cos(2 * Math.PI * p);
+            return n;
+        }
+        static double randn2(double r, double p)
+        {
+            double n;
+            n = Math.Sqrt(-1 * 2 * Math.Log(r)) * Math.Sin(2 * Math.PI * p);
             return n;
         }
     }
