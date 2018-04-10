@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +21,7 @@ namespace ПроектГПОКонсоль
             double[] lb; double[] ub; TFunc fobj; double lb1, ub1; double Best_score = 100;
             double[] Best_pos;
             SearchAgents_no = 30; // Number of search agents
-            Function_name = "F5"; // Name of the test function that can be from F1 to F13 (Table 1,2,3 in the paper)
+            Function_name = "F1"; // Name of the test function that can be from F1 to F13 (Table 1,2,3 in the paper)
             Max_iteration = 500; // Maximum number of iterations
             int Max_progon = 30; Aver = new double[Max_iteration];
             //Load details of the selected benchmark function
@@ -55,75 +55,75 @@ namespace ПроектГПОКонсоль
             dim = 10;
             switch (F)
             {
-                case "F1":
+                case "F1":   //Sphere
                     break;
-                case "F2":
+                case "F2":   //Schwefel 2.22
                     fobj = F2;
                     lb1 = -10;
                     ub1 = 10;
                     dim = 10;
                     break;
-                case "F3":
+                case "F3":   //Schwefel 1.2
                     fobj = F3;
                     lb1 = -100;
                     ub1 = 100;
                     dim = 10;
                     break;
-                case "F4":
+                case "F4":   //Schwefel 2.21
                     fobj = F4;
                     lb1 = -100;
                     ub1 = 100;
                     dim = 10;
                     break;
-                case "F5":
+                case "F5":   //Rosenbrock
                     fobj = F5;
                     lb1 = -30;
                     ub1 = 30;
                     dim = 10;
                     break;
-                case "F6":
+                case "F6":   //Step
                     fobj = F6;
                     lb1 = -100;
                     ub1 = 100;
                     dim = 10;
                     break;
-                case "F7":
+                case "F7":   //Quartic
                     fobj = F7;
                     lb1 = -1.28;
                     ub1 = 1.28;
                     dim = 10;
                     break;
-                case "F8":
+                case "F8":   //Schwefel
                     fobj = F8;
                     lb1 = -500;
                     ub1 = 500;
                     dim = 10;
                     break;
-                case "F9":
+                case "F9":   //Rastrigin
                     fobj = F9;
                     lb1 = -5.12;
                     ub1 = 5.12;
                     dim = 10;
                     break;
-                case "F10":
+                case "F10":   //Ackley
                     fobj = F10;
                     lb1 = -32;
                     ub1 = 32;
                     dim = 10;
                     break;
-                case "F11":
+                case "F11":   //Griewank
                     fobj = F11;
                     lb1 = -600;
                     ub1 = 600;
                     dim = 10;
                     break;
-                case "F12":
+                case "F12":   //Penalized 1
                     fobj = F12;
                     lb1 = -50;
                     ub1 = 50;
                     dim = 10;
                     break;
-                case "F13":
+                case "F13":   //Penalized 2
                     fobj = F13;
                     lb1 = -50;
                     ub1 = 50;
@@ -131,7 +131,7 @@ namespace ПроектГПОКонсоль
                     break;
             }
         }
-        static double F1(double[] x)
+        static double F1(double[] x)   //Sphere
         {
             double sum = 0; foreach (double elem in x)
             {
@@ -139,7 +139,7 @@ namespace ПроектГПОКонсоль
             }
             return sum;
         }
-        static double F2(double[] x)
+        static double F2(double[] x)    //Schwefel 2.22 
         {
             double sum = 0, prod = 1; foreach (double elem in x)
             {
@@ -148,7 +148,7 @@ namespace ПроектГПОКонсоль
             }
             return (sum + prod);
         }
-        static double F3(double[] x)
+        static double F3(double[] x)    //Schwefel 1.2
         {
             int i, j, dim = x.Length; double y = 0;
             for (i = 0; i < dim; i++)
@@ -162,7 +162,7 @@ namespace ПроектГПОКонсоль
             }
             return y;
         }
-        static double F4(double[] x)
+        static double F4(double[] x)   //Schwefel 2.21 
         {
             double max = 0;
             foreach (double elem in x)
@@ -171,7 +171,7 @@ namespace ПроектГПОКонсоль
             }
             return max;
         }
-        static double F5(double[] x)
+        static double F5(double[] x)   //Rosenbrock 
         {
             int dim = x.Length, i; double sum = 0;
             for (i = 0; i <= (dim - 2); i++)
@@ -180,7 +180,7 @@ namespace ПроектГПОКонсоль
             }
             return sum;
         }
-        static double F6(double[] x)
+        static double F6(double[] x)   //Step
         {
             double sum = 0; foreach (double elem in x)
             {
@@ -188,7 +188,7 @@ namespace ПроектГПОКонсоль
             }
             return sum;
         }
-        static double F7(double[] x)
+        static double F7(double[] x)   //Quartic 
         {
             double sum = rnd11.NextDouble(); int i, dim = x.Length;
             for (i = 0; i < dim; i++)
@@ -197,16 +197,15 @@ namespace ПроектГПОКонсоль
             }
             return sum;
         }
-        static double F8(double[] x)
+        static double F8(double[] x)   //Schwefel 
         {
             double sum = 0; foreach (double elem in x)
             {
                 sum = sum + (-1 * elem * Math.Sin(Math.Sqrt(Math.Abs(elem))));
             }
-            sum = sum / (double)x.Length;
             return sum;
         }
-        static double F9(double[] x)
+        static double F9(double[] x)   //Rastrigin 
         {
             double sum = 0; foreach (double elem in x)
             {
@@ -214,7 +213,7 @@ namespace ПроектГПОКонсоль
             }
             return sum;
         }
-        static double F10(double[] x)
+        static double F10(double[] x)  //Ackley
         {
             double sum1 = 0, sum2 = 0, sum;
             foreach (double elem in x)
@@ -226,7 +225,7 @@ namespace ПроектГПОКонсоль
             sum = -20 * Math.Exp(-0.2 * Math.Sqrt(sum1)) - Math.Exp(sum2) + 20 + Math.Exp(1);
             return sum;
         }
-        static double F11(double[] x)
+        static double F11(double[] x)   //Griewank
         {
             double sum = 0, mply = 1; int i, dim = x.Length;
             for (i = 0; i < dim; i++)
@@ -237,7 +236,7 @@ namespace ПроектГПОКонсоль
             double y = sum / 4000 - mply + 1;
             return y;
         }
-        static double F12(double[] x)
+        static double F12(double[] x)    //Penalized 1
         {
             int dim = x.Length;
             double[] z = new double[dim];
@@ -254,7 +253,7 @@ namespace ПроектГПОКонсоль
             {
                 sum2 = sum2 + uFunc(elem, 10, 100, 4);
             }
-            double y = (Math.PI / dim) * (10 * Math.Sin(Math.PI * z[0]) + sum1 + Math.Pow(z[dim - 1] - 1, 2)) + sum2;
+            double y = (Math.PI / dim) * (10 * Math.Pow(Math.Sin(Math.PI * z[0]),2) + sum1 + Math.Pow(z[dim - 1] - 1, 2)) + sum2;
             return y;
         }
         static double uFunc(double x, int a, int k, int m)
@@ -263,7 +262,7 @@ namespace ПроектГПОКонсоль
             if (x < -a) return (k * Math.Pow(-x - a, m));
             return 0;
         }
-        static double F13(double[] x)
+        static double F13(double[] x)   //Penalized 2
         {
             int dim = x.Length; double sum1 = 0, sum2 = 0;
             foreach (double elem in x)
